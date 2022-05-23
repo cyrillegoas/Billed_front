@@ -1,11 +1,10 @@
-import VerticalLayout from "./VerticalLayout.js";
-import ErrorPage from "./ErrorPage.js";
-import LoadingPage from "./LoadingPage.js";
+import VerticalLayout from './VerticalLayout.js';
+import ErrorPage from './ErrorPage.js';
+import LoadingPage from './LoadingPage.js';
 
-import Actions from "./Actions.js";
+import Actions from './Actions.js';
 
-const row = (bill) => {
-  return `
+const row = (bill) => `
     <tr>
       <td>${bill.type}</td>
       <td>${bill.name}</td>
@@ -17,16 +16,14 @@ const row = (bill) => {
       </td>
     </tr>
     `;
-};
 
-const rows = (data) => {
-  return data && data.length
+const rows = (data) =>
+  data && data.length
     ? data
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .map((bill) => row(bill))
-        .join("")
-    : "";
-};
+        .join('')
+    : '';
 
 export default ({ data: bills, loading, error }) => {
   const modal = () => `
@@ -48,7 +45,8 @@ export default ({ data: bills, loading, error }) => {
 
   if (loading) {
     return LoadingPage();
-  } else if (error) {
+  }
+  if (error) {
     return ErrorPage(error);
   }
 
