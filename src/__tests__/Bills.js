@@ -75,11 +75,6 @@ describe('Given I am connected as an employee', () => {
     });
   });
 
-  describe('When I am on Bills Page and bills are loading', () => {
-    test('Then only the bill icon in vertical layout should be highlighted', () => {});
-    test('Then a loading message should be present', () => {});
-  });
-
   describe('When I am on Bills Page and a 404 error occurs', () => {
     beforeAll(() => {
       fetch.resetMocks();
@@ -99,6 +94,20 @@ describe('Given I am connected as an employee', () => {
     });
     test('Then a error message should be present', () => {
       expect(screen.getByTestId('error-message')).toBeTruthy();
+    });
+  });
+
+  describe('When we have corrupted data', () => {
+    beforeAll(() => {
+      const corruptedData = [{ date: 'corrupted' }];
+      fetch.resetMocks();
+      fetch.mockResponseOnce(JSON.stringify(corruptedData), { status: 200 });
+      window.onNavigate(ROUTES_PATH.Bills);
+    });
+    test('Then a error message should be present', () => {
+      const tableRow = document.querySelector('tbody tr');
+      const thirdChild = tableRow.children[2].textContent;
+      expect(thirdChild).toBe('corrupted');
     });
   });
 });
