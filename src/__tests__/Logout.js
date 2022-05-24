@@ -31,7 +31,7 @@ const bills = [
 
 describe('Given I am connected', () => {
   describe('When I click on disconnect button', () => {
-    test('Then, I should be sent to login page', () => {
+    test('Then, I should be sent to login page', async () => {
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname });
       };
@@ -45,12 +45,13 @@ describe('Given I am connected', () => {
         })
       );
       document.body.innerHTML = DashboardUI({ bills });
+      const user = userEvent.setup();
       const logout = new Logout({ document, onNavigate, localStorage });
       const handleClick = jest.fn(logout.handleClick);
 
       const disco = screen.getByTestId('layout-disconnect');
       disco.addEventListener('click', handleClick);
-      userEvent.click(disco);
+      await user.click(disco);
       expect(handleClick).toHaveBeenCalled();
       expect(screen.getByText('Administration')).toBeTruthy();
     });
