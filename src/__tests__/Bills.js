@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { enableFetchMocks } from 'jest-fetch-mock';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import { screen, waitFor } from '@testing-library/dom';
@@ -13,7 +14,7 @@ import mockStore from '../__mocks__/store';
 
 import router from '../app/Router.js';
 
-jest.mock('../app/Store.js', () => mockStore);
+enableFetchMocks();
 
 describe('Given I am connected as an employee', () => {
   const root = document.createElement('div');
@@ -24,7 +25,11 @@ describe('Given I am connected as an employee', () => {
   window.localStorage.setItem('user', JSON.stringify({ type: 'Employee' }));
 
   describe('When I am on Bills Page and bills are loaded', () => {
-    window.onNavigate(ROUTES_PATH.Bills);
+    beforeAll(() => {
+      fetch.resetMocks();
+      fetch.mockResponseOnce(JSON.stringify(bills));
+      window.onNavigate(ROUTES_PATH.Bills);
+    });
 
     test('Then only the bill icon in vertical layout should be highlighted', () => {
       const windowIcon = document.querySelector('#layout-icon1');
@@ -75,8 +80,25 @@ describe('Given I am connected as an employee', () => {
     test('Then a loading message should be present', () => {});
   });
 
-  describe('When I am on Bills Page and an error occurs', () => {
-    test('Then only the bill icon in vertical layout should be highlighted', () => {});
-    test('Then a error message should be present', () => {});
+  describe('When I am on Bills Page and a 404 error occurs', () => {
+    beforeAll(() => {
+      fetch.resetMocks();
+      fetch.mockResponseOnce(JSON.stringify(bills), { status: 404 });
+      window.onNavigate(ROUTES_PATH.Bills);
+    });
+    test('Then a error message should be present', () => {
+      expect(screen.getByTestId('error-message')).toBeTruthy();
+    });
+  });
+
+  describe('When I am on Bills Page and a 500 error occurs', () => {
+    beforeAll(() => {
+      fetch.resetMocks();
+      fetch.mockResponseOnce(JSON.stringify(bills), { status: 500 });
+      window.onNavigate(ROUTES_PATH.Bills);
+    });
+    test('Then a error message should be present', () => {
+      expect(screen.getByTestId('error-message')).toBeTruthy();
+    });
   });
 });
