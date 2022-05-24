@@ -1,2 +1,9 @@
 import $ from 'jquery';
-global.$ = global.jQuery = $;
+
+global.$ = $;
+global.jQuery = $;
+
+$.fn.modal = (x) => {
+  $.fn.modal[x]();
+};
+$.fn.modal.show = () => {};

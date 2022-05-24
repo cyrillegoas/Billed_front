@@ -48,8 +48,17 @@ describe('Given I am connected as an employee', () => {
         .map((bill) => formatDate(bill.date));
       expect(dates).toEqual(expectedDates);
     });
-    test('Then modal should not have a show class by default', () => {});
-    test('Then clicking on the eye icon should open a modal', async () => {});
+    test('Then modal should not have a show class by default', () => {
+      const modalEl = document.querySelector('.modal');
+      expect(modalEl).not.toHaveClass('show');
+    });
+    test('Then clicking on the eye icon should open a modal', async () => {
+      const openModalEl = document.querySelector('#eye');
+      const spy = jest.spyOn(global.$.fn.modal, 'show');
+      const user = userEvent.setup();
+      await user.click(openModalEl);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
     test('Then clicking outside of the modal should close it', () => {});
     test('Then clicking clicking on "create new bill" should route to newbill UI', () => {});
   });
