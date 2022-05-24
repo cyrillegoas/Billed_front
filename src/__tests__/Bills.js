@@ -104,7 +104,7 @@ describe('Given I am connected as an employee', () => {
       fetch.mockResponseOnce(JSON.stringify(corruptedData), { status: 200 });
       window.onNavigate(ROUTES_PATH.Bills);
     });
-    test('Then a error message should be present', () => {
+    test('Then the date should not be formated', () => {
       const tableRow = document.querySelector('tbody tr');
       const thirdChild = tableRow.children[2].textContent;
       expect(thirdChild).toBe('corrupted');
