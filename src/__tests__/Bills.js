@@ -59,8 +59,15 @@ describe('Given I am connected as an employee', () => {
       await user.click(openModalEl);
       expect(spy).toHaveBeenCalledTimes(1);
     });
-    test('Then clicking outside of the modal should close it', () => {});
-    test('Then clicking clicking on "create new bill" should route to newbill UI', () => {});
+    test('Then clicking on "create new bill" should route to newbill UI', async () => {
+      const openNewBill = document.querySelector(
+        '[data-testid="btn-new-bill"]'
+      );
+      const user = userEvent.setup();
+      await user.click(openNewBill);
+      const url = document.URL;
+      expect(url.split('/').pop()).toBe('new');
+    });
   });
 
   describe('When I am on Bills Page and bills are loading', () => {
