@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-
+import { enableFetchMocks } from 'jest-fetch-mock';
+import '@testing-library/jest-dom';
 import { fireEvent, screen, waitFor } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import DashboardFormUI from '../views/DashboardFormUI.js';
@@ -13,7 +14,7 @@ import mockStore from '../__mocks__/store';
 import { bills } from '../fixtures/bills';
 import router from '../app/Router';
 
-jest.mock('../app/store', () => mockStore);
+enableFetchMocks();
 
 describe('Given I am connected as an Admin', () => {
   describe('When I am on Dashboard page, there are bills, and there is one pending', () => {
@@ -312,15 +313,23 @@ describe('Given I am connected as Admin and I am on Dashboard page and I clicked
 // test d'intégration GET
 describe('Given I am a user connected as Admin', () => {
   describe('When I navigate to Dashboard', () => {
-    test('fetches bills from mock API GET', async () => {
-      localStorage.setItem(
+    beforeAll(() => {
+      const root = document.createElement('div');
+      root.setAttribute('id', 'root');
+      document.body.innerHTML = '';
+      document.body.append(root);
+      router();
+      Object.defineProperty(window, 'localStorage', {
+        value: localStorageMock,
+      });
+      window.localStorage.setItem(
         'user',
         JSON.stringify({ type: 'Admin', email: 'a@a' })
       );
-      const root = document.createElement('div');
-      root.setAttribute('id', 'root');
-      document.body.append(root);
-      router();
+      fetch.resetMocks();
+      fetch.mockResponseOnce(JSON.stringify(bills), { status: 200 });
+    });
+    test('fetches bills from mock API GET', async () => {
       window.onNavigate(ROUTES_PATH.Dashboard);
       await waitFor(() => screen.getByText('Validations'));
       const contentPending = await screen.getByText('En attente (1)');
@@ -329,43 +338,24 @@ describe('Given I am a user connected as Admin', () => {
       expect(contentRefused).toBeTruthy();
       expect(screen.getByTestId('big-billed-icon')).toBeTruthy();
     });
-    describe('When an error occurs on API', () => {
-      beforeEach(() => {
-        jest.spyOn(mockStore, 'bills');
-        Object.defineProperty(window, 'localStorage', {
-          value: localStorageMock,
-        });
-        window.localStorage.setItem(
-          'user',
-          JSON.stringify({
-            type: 'Admin',
-            email: 'a@a',
-          })
-        );
-        const root = document.createElement('div');
-        root.setAttribute('id', 'root');
-        document.body.appendChild(root);
-        router();
-      });
-      test('fetches bills from an API and fails with 404 message error', async () => {
-        mockStore.bills.mockImplementationOnce(() => ({
-          list: () => Promise.reject(new Error('Erreur 404')),
-        }));
+    describe('When a 404 error occurs', () => {
+      beforeAll(() => {
+        fetch.resetMocks();
+        fetch.mockResponseOnce(JSON.stringify(bills), { status: 404 });
         window.onNavigate(ROUTES_PATH.Dashboard);
-        await new Promise(process.nextTick);
-        const message = await screen.getByText(/Erreur 404/);
-        expect(message).toBeTruthy();
       });
-
-      test('fetches messages from an API and fails with 500 message error', async () => {
-        mockStore.bills.mockImplementationOnce(() => ({
-          list: () => Promise.reject(new Error('Erreur 500')),
-        }));
-
+      test('fetches bills from an API and fails with 404 message error', () => {
+        expect(screen.getByTestId('error-message')).toBeTruthy();
+      });
+    });
+    describe('When a 500 error occurs', () => {
+      beforeAll(() => {
+        fetch.resetMocks();
+        fetch.mockResponseOnce(JSON.stringify(bills), { status: 500 });
         window.onNavigate(ROUTES_PATH.Dashboard);
-        await new Promise(process.nextTick);
-        const message = await screen.getByText(/Erreur 500/);
-        expect(message).toBeTruthy();
+      });
+      test('fetches bills from an API and fails with 500 message error', () => {
+        expect(screen.getByTestId('error-message')).toBeTruthy();
       });
     });
   });
